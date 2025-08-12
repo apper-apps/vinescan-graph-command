@@ -14,10 +14,18 @@ const Scanner = () => {
   const [showWineDetails, setShowWineDetails] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   
-  const handleBarcodeDetected = async (barcode) => {
+const handleBarcodeDetected = async (barcode) => {
     setIsLoading(true);
     
     try {
+      // Validate barcode format
+      if (!barcode || barcode.trim().length === 0) {
+        toast.warning("Invalid barcode detected. Please try again.");
+        return;
+      }
+      
+      toast.info(`Detected barcode: ${barcode}`);
+      
       // Look up wine by barcode
       const wine = await wineService.getByBarcode(barcode);
       
@@ -32,7 +40,7 @@ const Scanner = () => {
         toast.success(`Found ${wine.name}!`);
       } else {
         // Wine not found - show option to add it
-        toast.info("Wine not found. Would you like to add it?");
+        toast.info(`Wine not found for barcode ${barcode}. Would you like to add it?`);
         // In a real app, this would show an add wine form with the barcode pre-filled
       }
     } catch (error) {

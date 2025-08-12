@@ -109,5 +109,24 @@ body {
 }
 
 .wine-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(114, 47, 55, 0.5);
+background: rgba(114, 47, 55, 0.5);
+}
+
+/* Barcode scanning animation */
+@keyframes scanning {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.scanning-line {
+  animation: scanning 2s linear infinite;
 }
