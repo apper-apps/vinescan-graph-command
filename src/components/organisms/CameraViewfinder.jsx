@@ -5,14 +5,21 @@ import { cn } from "@/utils/cn";
 
 const CameraViewfinder = ({ onBarcodeDetected, className }) => {
   const [isScanning, setIsScanning] = useState(false);
-  const [cameraError, setCameraError] = useState("");
+const [cameraError, setCameraError] = useState("");
+  const [permissionDenied, setPermissionDenied] = useState(false);
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   
-  const startCamera = async () => {
+const startCamera = async () => {
     try {
       setCameraError("");
+      setPermissionDenied(false);
       setIsScanning(true);
+      
+      // Check if getUserMedia is supported
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error("Camera not supported in this browser");
+      }
       
       // Request camera access
       const stream = await navigator.mediaDevices.getUserMedia({
@@ -29,8 +36,23 @@ const CameraViewfinder = ({ onBarcodeDetected, className }) => {
       }
     } catch (error) {
       console.error("Camera access error:", error);
-      setCameraError("Unable to access camera. Please check permissions.");
       setIsScanning(false);
+      
+      // Handle specific error types
+      if (error.name === "NotAllowedError") {
+        setPermissionDenied(true);
+        setCameraError("Camera access denied. Please allow camera permissions and try again.");
+      } else if (error.name === "NotFoundError") {
+        setCameraError("No camera found on this device.");
+      } else if (error.name === "NotSupportedError") {
+        setCameraError("Camera is not supported in this browser.");
+      } else if (error.name === "NotReadableError") {
+        setCameraError("Camera is already in use by another application.");
+      } else if (error.message === "Camera not supported in this browser") {
+        setCameraError("Camera access is not supported in this browser. Please use a modern browser.");
+      } else {
+        setCameraError("Unable to access camera. Please check your device and browser settings.");
+      }
     }
   };
   
@@ -83,8 +105,29 @@ const CameraViewfinder = ({ onBarcodeDetected, className }) => {
               <p className="text-white/80 text-sm mb-4">
                 Point your camera at the barcode
               </p>
-              {cameraError && (
-                <p className="text-wine-error text-sm mb-4">{cameraError}</p>
+{cameraError && (
+                <div className="mb-4 p-4 bg-wine-error/10 border border-wine-error/20 rounded-lg">
+                  <p className="text-wine-error text-sm mb-2">{cameraError}</p>
+                  {permissionDenied && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-600">
+                        To fix this issue:
+                        <br />• Click the camera icon in your browser's address bar
+                        <br />• Select "Allow" for camera access
+                        <br />• Refresh the page and try again
+                      </p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={startCamera}
+                        className="text-wine-error border-wine-error hover:bg-wine-error/10"
+                      >
+                        <ApperIcon name="Camera" size={16} className="mr-2" />
+                        Request Permission Again
+                      </Button>
+                    </div>
+                  )}
+                </div>
               )}
               <Button 
                 onClick={startCamera}
