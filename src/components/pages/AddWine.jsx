@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
@@ -10,9 +10,9 @@ import WineTypeSelector from "@/components/molecules/WineTypeSelector";
 import StarRating from "@/components/molecules/StarRating";
 import wineService from "@/services/api/wineService";
 import userRatingService from "@/services/api/userRatingService";
-
 const AddWine = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [formData, setFormData] = useState({
     name: "",
     vineyard: "",
@@ -28,6 +28,21 @@ const AddWine = () => {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   
+  // Check for barcode in URL parameters and prepopulate
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const barcodeFromUrl = searchParams.get('barcode');
+    
+    if (barcodeFromUrl) {
+      setFormData(prev => ({
+        ...prev,
+        barcode: barcodeFromUrl
+      }));
+      
+      // Show notification that barcode was prepopulated
+      toast.info(`Barcode ${barcodeFromUrl} has been filled in from your scan.`);
+    }
+  }, [location.search]);
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     if (errors[field]) {

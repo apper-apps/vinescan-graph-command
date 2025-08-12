@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import ApperIcon from "@/components/ApperIcon";
 import Button from "@/components/atoms/Button";
@@ -7,13 +8,12 @@ import WineDetailsModal from "@/components/organisms/WineDetailsModal";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/atoms/Card";
 import wineService from "@/services/api/wineService";
 import userRatingService from "@/services/api/userRatingService";
-
 const Scanner = () => {
+  const navigate = useNavigate();
   const [scannedWine, setScannedWine] = useState(null);
   const [userRating, setUserRating] = useState(null);
   const [showWineDetails, setShowWineDetails] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  
 const handleBarcodeDetected = async (barcode) => {
     setIsLoading(true);
     
@@ -27,7 +27,7 @@ const handleBarcodeDetected = async (barcode) => {
       toast.info(`Detected barcode: ${barcode}`);
       
       // Look up wine by barcode
-      const wine = await wineService.getByBarcode(barcode);
+const wine = await wineService.getByBarcode(barcode);
       
       if (wine) {
         // Get user's rating for this wine
@@ -39,9 +39,9 @@ const handleBarcodeDetected = async (barcode) => {
         
         toast.success(`Found ${wine.name}!`);
       } else {
-        // Wine not found - show option to add it
-        toast.info(`Wine not found for barcode ${barcode}. Would you like to add it?`);
-        // In a real app, this would show an add wine form with the barcode pre-filled
+        // Wine not found - navigate to add wine with barcode pre-filled
+        toast.info(`Wine not found for barcode ${barcode}. Taking you to add it!`);
+        navigate(`/add-wine?barcode=${encodeURIComponent(barcode)}`);
       }
     } catch (error) {
       console.error("Error looking up wine:", error);
