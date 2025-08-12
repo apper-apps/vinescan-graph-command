@@ -86,7 +86,35 @@ const stopCamera = () => {
     setIsScanning(false);
   };
   
-  const startBarcodeScanning = () => {
+const startBarcodeScanning = async () => {
+    if (!videoRef.current || !codeReader.current) return;
+    
+    try {
+      // Use ZXing's continuous scanning from video device
+      const result = await codeReader.current.decodeFromVideoDevice(
+        undefined, // Use default video input device
+        videoRef.current,
+        (result, err) => {
+          if (result) {
+            // Barcode detected successfully
+            console.log('Barcode detected:', result.getText());
+            onBarcodeDetected(result.getText());
+            stopCamera();
+          } else if (err && !(err instanceof NotFoundException)) {
+            // Log other errors but continue scanning
+            console.warn('Barcode scanning error:', err);
+          }
+          // For NotFoundException, just continue scanning silently
+        }
+      );
+    } catch (error) {
+      console.error('Failed to start barcode scanning:', error);
+      // Fallback to manual scanning if continuous scanning fails
+      startManualScanning();
+    }
+  };
+  
+  const startManualScanning = () => {
     if (!videoRef.current || !canvasRef.current || !codeReader.current) return;
     
     const video = videoRef.current;
@@ -94,16 +122,16 @@ const stopCamera = () => {
     const context = canvas.getContext('2d');
     
     // Set canvas size to match video
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
+    canvas.width = video.videoWidth || 640;
+    canvas.height = video.videoHeight || 480;
     
-    // Start continuous scanning
+    // Start continuous scanning as fallback
     scanIntervalRef.current = setInterval(() => {
       if (video.readyState === video.HAVE_ENOUGH_DATA) {
-        // Draw current video frame to canvas
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
         try {
+          // Draw current video frame to canvas
+          context.drawImage(video, 0, 0, canvas.width, canvas.height);
+          
           // Try to decode barcode from canvas
           const result = codeReader.current.decodeFromCanvas(canvas);
           if (result) {
@@ -116,11 +144,11 @@ const stopCamera = () => {
         } catch (err) {
           // No barcode found in this frame, continue scanning
           if (!(err instanceof NotFoundException)) {
-            console.warn('Barcode scanning error:', err);
+            console.warn('Manual barcode scanning error:', err);
           }
         }
       }
-    }, 100); // Scan every 100ms
+    }, 150); // Scan every 150ms for performance
   };
   
 const simulateBarcodeDetection = () => {
@@ -145,11 +173,6 @@ const simulateBarcodeDetection = () => {
     };
   }, []);
 // Cleanup on unmount
-  useEffect(() => {
-    return () => {
-      stopCamera();
-    };
-  }, []);
   return (
     <div className={cn("relative bg-black rounded-xl overflow-hidden", className)}>
       {!isScanning ? (
@@ -247,39 +270,6 @@ const simulateBarcodeDetection = () => {
               Cancel
             </Button>
             
-{/* Real-time scanning indicator */}
-            {isScanning && (
-              <div className="absolute inset-0 pointer-events-none">
-                {/* Scanning overlay */}
-                <div className="absolute inset-0 bg-black/20">
-                  {/* Scanning area frame */}
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 
-                                w-64 h-40 border-2 border-wine-gold rounded-lg">
-                    {/* Scanning line animation */}
-                    <div className="relative w-full h-full overflow-hidden">
-                      <div className="absolute w-full h-0.5 bg-wine-gold shadow-lg animate-pulse
-                                    opacity-80" style={{
-                        animation: 'scanning 2s linear infinite',
-                        background: 'linear-gradient(90deg, transparent, #B8860B, transparent)'
-                      }} />
-                    </div>
-                    
-                    {/* Corner indicators */}
-                    <div className="absolute -top-1 -left-1 w-6 h-6 border-l-2 border-t-2 border-wine-gold" />
-                    <div className="absolute -top-1 -right-1 w-6 h-6 border-r-2 border-t-2 border-wine-gold" />
-                    <div className="absolute -bottom-1 -left-1 w-6 h-6 border-l-2 border-b-2 border-wine-gold" />
-                    <div className="absolute -bottom-1 -right-1 w-6 h-6 border-r-2 border-b-2 border-wine-gold" />
-                  </div>
-                  
-                  {/* Scanning status */}
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 
-                                bg-black/60 text-white px-4 py-2 rounded-full text-sm flex items-center gap-2">
-                    <div className="w-2 h-2 bg-wine-gold rounded-full animate-pulse" />
-                    Scanning for barcode...
-                  </div>
-                </div>
-              </div>
-            )}
             
             {/* Demo: Simulate barcode detection */}
             <Button
@@ -292,7 +282,15 @@ const simulateBarcodeDetection = () => {
             </Button>
           </div>
         </div>
-      )}
+)}
+      
+      {/* Hidden canvas for barcode detection */}
+      <canvas
+        ref={canvasRef}
+        style={{ display: 'none' }}
+        width="640"
+        height="480"
+      />
     </div>
   );
 };
