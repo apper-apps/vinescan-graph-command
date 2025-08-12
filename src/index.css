@@ -1,0 +1,113 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+@import 'react-toastify/dist/ReactToastify.css';
+
+:root {
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', sans-serif;
+  background-color: #FAF9F6;
+}
+
+/* Custom toast styles */
+.Toastify__toast {
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  box-shadow: 0 4px 12px rgba(114, 47, 55, 0.15);
+}
+
+.Toastify__toast--success {
+  background: linear-gradient(135deg, #556B2F 0%, #6B8E23 100%);
+}
+
+.Toastify__toast--error {
+  background: linear-gradient(135deg, #DC143C 0%, #B22222 100%);
+}
+
+.Toastify__toast--info {
+  background: linear-gradient(135deg, #4682B4 0%, #5F9EA0 100%);
+}
+
+.Toastify__toast--warning {
+  background: linear-gradient(135deg, #DAA520 0%, #B8860B 100%);
+}
+
+.Toastify__progress-bar {
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.Toastify__close-button {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Star rating styles */
+.star-rating {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.star-rating button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.1s ease;
+}
+
+.star-rating button:hover {
+  transform: scale(1.1);
+}
+
+/* Wine bottle animation keyframes */
+@keyframes bottle-bounce {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.bottle-bounce {
+  animation: bottle-bounce 2s ease-in-out infinite;
+}
+
+/* Shimmer loading effect */
+@keyframes shimmer {
+  0% {
+    background-position: -200px 0;
+  }
+  100% {
+    background-position: calc(200px + 100%) 0;
+  }
+}
+
+.shimmer {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200px 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Custom scrollbar for wine collection */
+.wine-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.wine-scroll::-webkit-scrollbar-track {
+  background: rgba(114, 47, 55, 0.1);
+  border-radius: 3px;
+}
+
+.wine-scroll::-webkit-scrollbar-thumb {
+  background: rgba(114, 47, 55, 0.3);
+  border-radius: 3px;
+}
+
+.wine-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(114, 47, 55, 0.5);
+}
